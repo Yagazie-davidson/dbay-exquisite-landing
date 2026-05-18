@@ -9,7 +9,6 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { defaultViewport } from "@/lib/motion";
 import {
   ARC_DRIFT,
   buildRoutePath,
@@ -27,43 +26,71 @@ type StopKey = keyof typeof ROUTE_WAYPOINTS;
 
 const STOP_KEYS: StopKey[] = ["origin", "transit", "destination"];
 
+const STATIC_PATH = buildRoutePath(
+  { x: ROUTE_WAYPOINTS.origin.x, y: ROUTE_WAYPOINTS.origin.y },
+  { x: ROUTE_WAYPOINTS.transit.x, y: ROUTE_WAYPOINTS.transit.y },
+  { x: ROUTE_WAYPOINTS.destination.x, y: ROUTE_WAYPOINTS.destination.y }
+);
+
+function getPathFromOffsets(
+  oy: number,
+  ty: number,
+  dy: number,
+  py: number
+): string {
+  const o = ROUTE_WAYPOINTS.origin;
+  const t = ROUTE_WAYPOINTS.transit;
+  const d = ROUTE_WAYPOINTS.destination;
+  return buildRoutePath(
+    { x: o.x, y: o.y + oy + py },
+    { x: t.x, y: t.y + ty + py },
+    { x: d.x, y: d.y + dy + py }
+  );
+}
+
+/** Safari-safe stop: animate the group transform, not SVG cy/y motion values */
 function RouteStop({
   point,
   yOffset,
   delay,
   prefersReducedMotion,
+  show,
 }: {
   point: RoutePoint;
   yOffset: ReturnType<typeof useMotionValue<number>>;
   delay: number;
   prefersReducedMotion: boolean | null;
+  show: boolean;
 }) {
-  const cy = useTransform(yOffset, (v) => point.y + v);
-  const labelY = useTransform(yOffset, (v) => point.labelY + v);
+  const y = useTransform(yOffset, (v) => v);
 
   return (
     <motion.g
+      style={{ y }}
       initial={{ opacity: 0, scale: 0.8 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={defaultViewport}
-      transition={{ delay: prefersReducedMotion ? 0 : delay }}
+      animate={
+        show
+          ? { opacity: 1, scale: 1 }
+          : { opacity: 0, scale: 0.8 }
+      }
+      transition={{ delay: prefersReducedMotion ? 0 : delay, duration: 0.45 }}
     >
-      <motion.circle
+      <circle
         cx={point.x}
-        cy={cy}
+        cy={point.y}
         r={point.radius}
         fill={point.fill}
         fillOpacity={point.fill === "#C45C3E" && point.radius < 8 ? 0.9 : 1}
       />
-      <motion.text
+      <text
         x={point.x}
-        y={labelY}
+        y={point.labelY}
         textAnchor="middle"
         className={point.labelClass}
         style={{ fontFamily: "var(--font-ibm-plex)" }}
       >
         {point.label}
-      </motion.text>
+      </text>
     </motion.g>
   );
 }
@@ -72,7 +99,12 @@ export function RouteVisual() {
   const prefersReducedMotion = useReducedMotion();
   const pathRef = useRef<SVGPathElement>(null);
   const [hasDrawn, setHasDrawn] = useState(false);
-  const [traveler, setTraveler] = useState({ x: 0, y: 0 });
+  const [showStops, setShowStops] = useState(false);
+  const [pathD, setPathD] = useState(STATIC_PATH);
+  const [traveler, setTraveler] = useState(() => {
+    const o = ROUTE_WAYPOINTS.origin;
+    return { x: o.x, y: o.y };
+  });
 
   const originY = useMotionValue(0);
   const transitY = useMotionValue(0);
@@ -80,22 +112,26 @@ export function RouteVisual() {
   const pathY = useMotionValue(0);
   const travelProgress = useMotionValue(0);
 
-  const pathD = useTransform(
-    [originY, transitY, destY, pathY],
-    (values: number[]) => {
-      const [oy, ty, dy, py] = values;
-      const o = ROUTE_WAYPOINTS.origin;
-      const t = ROUTE_WAYPOINTS.transit;
-      const d = ROUTE_WAYPOINTS.destination;
-      return buildRoutePath(
-        { x: o.x, y: o.y + oy + py },
-        { x: t.x, y: t.y + ty + py },
-        { x: d.x, y: d.y + dy + py }
-      );
-    }
-  );
+  const syncPath = (oy: number, ty: number, dy: number, py: number) => {
+    setPathD(getPathFromOffsets(oy, ty, dy, py));
+  };
 
-  const pathReady = Boolean(prefersReducedMotion) || hasDrawn;
+  useMotionValueEvent(originY, "change", (oy) => {
+    syncPath(oy, transitY.get(), destY.get(), pathY.get());
+  });
+  useMotionValueEvent(transitY, "change", (ty) => {
+    syncPath(originY.get(), ty, destY.get(), pathY.get());
+  });
+  useMotionValueEvent(destY, "change", (dy) => {
+    syncPath(originY.get(), transitY.get(), dy, pathY.get());
+  });
+  useMotionValueEvent(pathY, "change", (py) => {
+    syncPath(originY.get(), transitY.get(), destY.get(), py);
+  });
+
+  const reducedMotion = Boolean(prefersReducedMotion);
+  const pathReady = reducedMotion || hasDrawn;
+  const stopsVisible = reducedMotion || showStops;
 
   useEffect(() => {
     if (!pathReady || prefersReducedMotion) return;
@@ -142,24 +178,29 @@ export function RouteVisual() {
   };
 
   useMotionValueEvent(travelProgress, "change", updateTravelerPosition);
-  useMotionValueEvent(pathD, "change", () => {
-    updateTravelerPosition(travelProgress.get());
-  });
+
+  useEffect(() => {
+    if (pathReady) {
+      updateTravelerPosition(travelProgress.get());
+    }
+  }, [pathD, pathReady, travelProgress]);
 
   return (
     <motion.div
-      className="relative w-full max-w-lg aspect-[4/3] mx-auto lg:mx-0"
+      className="relative w-full max-w-lg min-h-[210px] sm:min-h-[280px] aspect-[4/3] mx-auto lg:mx-0"
       initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={defaultViewport}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
       <svg
         viewBox="0 0 600 280"
+        width="100%"
+        height="100%"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
+        className="block w-full h-full"
         aria-hidden
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -167,13 +208,6 @@ export function RouteVisual() {
             <stop offset="50%" stopColor="#C45C3E" />
             <stop offset="100%" stopColor="#0F2A33" />
           </linearGradient>
-          <filter id="travelerGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
         </defs>
 
         {LATITUDE_ARC_YS.map((baseY, i) => (
@@ -205,18 +239,21 @@ export function RouteVisual() {
           strokeWidth="2.5"
           strokeLinecap="round"
           fill="none"
-          initial={{ pathLength: prefersReducedMotion ? 1 : 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={defaultViewport}
+          vectorEffect="non-scaling-stroke"
+          initial={{ pathLength: prefersReducedMotion ? 1 : 0, opacity: 1 }}
+          animate={{ pathLength: 1 }}
           transition={{
             duration: prefersReducedMotion ? 0 : DRAW_TRANSITION.duration,
             ease: DRAW_TRANSITION.ease,
           }}
-          onAnimationComplete={() => setHasDrawn(true)}
+          onAnimationComplete={() => {
+            setHasDrawn(true);
+            setShowStops(true);
+          }}
         />
 
         {pathReady && !prefersReducedMotion && (
-          <motion.g filter="url(#travelerGlow)">
+          <g opacity={0.9}>
             <circle
               cx={traveler.x}
               cy={traveler.y}
@@ -224,19 +261,13 @@ export function RouteVisual() {
               fill="#C45C3E"
               opacity={0.25}
             />
-            <motion.circle
+            <circle
               cx={traveler.x}
               cy={traveler.y}
               r={TRAVELER.radius}
               fill="#C45C3E"
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{
-                duration: TRAVELER.duration / 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
             />
-          </motion.g>
+          </g>
         )}
 
         {STOP_KEYS.map((key) => (
@@ -248,6 +279,7 @@ export function RouteVisual() {
             }
             delay={STOP_DELAYS[key]}
             prefersReducedMotion={prefersReducedMotion}
+            show={stopsVisible}
           />
         ))}
       </svg>
