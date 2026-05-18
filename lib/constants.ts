@@ -23,7 +23,7 @@ export const STEPS = [
     number: "01",
     title: "Find your item",
     description:
-      "Search eBay, Amazon, or any US online store for what you want. Read the listing carefully — especially condition and seller notes.",
+      "Search eBay, Amazon, or any US online store for what you want. Read the listing carefully, especially condition and seller notes.",
   },
   {
     number: "02",
@@ -35,13 +35,13 @@ export const STEPS = [
     number: "03",
     title: "Pay & we purchase",
     description:
-      "You pay; we buy the item and arrange international shipping. Shipping is billed separately by weight — we'll notify you when it's due.",
+      "You pay; we buy the item and arrange international shipping. Shipping is billed separately by weight. We'll notify you when it's due.",
   },
   {
     number: "04",
     title: "Transit to Nigeria",
     description:
-      "Delivery typically takes about 15 working days. FX rates can shift between quote and payment — we'll keep you informed.",
+      "Delivery typically takes about 15 working days. FX rates can shift between quote and payment, and we'll keep you informed.",
   },
   {
     number: "05",
@@ -64,7 +64,7 @@ export const CATEGORIES = [
 export const TESTIMONIALS = [
   {
     quote:
-      "Sent an eBay link for a MacBook — they vetted the seller, quoted in Naira, and it arrived exactly as described.",
+      "Sent an eBay link for a MacBook. They vetted the seller, quoted in Naira, and it arrived exactly as described.",
     source: "Repeat customer via X",
   },
   {
@@ -93,7 +93,7 @@ export const FAQ_ITEMS = [
   {
     question: "When do I pay shipping?",
     answer:
-      "Usually not with the item payment. Shipping is calculated by weight when your parcel is ready to ship — we'll reach out with the amount.",
+      "Usually not with the item payment. Shipping is calculated by weight when your parcel is ready to ship. We'll reach out with the amount.",
   },
   {
     question: "How long does delivery take?",
@@ -103,6 +103,6 @@ export const FAQ_ITEMS = [
   {
     question: "What stores do you shop from?",
     answer:
-      "eBay, Amazon, Best Buy, and most major US e-commerce sites. Send the link — if we can source it reliably, we'll let you know.",
+      "eBay, Amazon, Best Buy, and most major US e-commerce sites. Send the link and we'll let you know if we can source it reliably.",
   },
 ] as const;

@@ -20,7 +20,7 @@ export function WhatWeSource() {
             What we source
           </h2>
           <p className="mt-4 text-muted leading-relaxed">
-            Tech and gadgets from US stores — send any product link and we will
+            Tech and gadgets from US stores. Send any product link and we will
             tell you if we can source it reliably.
           </p>
         </motion.div>

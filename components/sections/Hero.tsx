@@ -27,7 +27,7 @@ export function Hero() {
             </h1>
             <p className="mt-6 text-lg text-muted leading-relaxed">
               We procure items from eBay, Amazon, and US e-commerce at your
-              request — vet sellers, quote in Naira, ship internationally, and
+              request. We vet sellers, quote in Naira, ship internationally, and
               deliver to your door.
             </p>
             <motion.div

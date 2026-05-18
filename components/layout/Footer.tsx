@@ -11,7 +11,7 @@ export function Footer() {
           <div>
             <p className="display-heading text-2xl">D&apos;BAY-Exquisite</p>
             <p className="mt-3 max-w-xs text-sm text-paper/70 leading-relaxed">
-              {COMPANY.tagline}. Send a US store link on X — we vet, quote in
+              {COMPANY.tagline}. Send a US store link on X. We vet, quote in
               Naira, ship, and deliver.
             </p>
           </div>

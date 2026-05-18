@@ -1,6 +1,6 @@
 # D'BAY-Exquisite Landing Page
 
-Marketing landing page for [D'BAY-Exquisite](https://x.com/dbayexquisite) — US shopping and shipping to Nigeria.
+Marketing landing page for [D'BAY-Exquisite](https://x.com/dbayexquisite), US shopping and shipping to Nigeria.
 
 ## Stack
 
@@ -29,19 +29,19 @@ npm start
 
 1. Push this repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com).
-3. Deploy — no environment variables required for v1.
+3. Deploy (no environment variables required for v1).
 
 ## Project structure
 
-- `app/` — routes (`/`, `/track`)
-- `components/sections/` — landing page sections
-- `components/ui/` — shared UI (route visual, motion links)
-- `lib/constants.ts` — copy, links, FAQ
-- `lib/motion.ts` — animation variants
+- `app/`: routes (`/`, `/track`)
+- `components/sections/`: landing page sections
+- `components/ui/`: shared UI (route visual, motion links)
+- `lib/constants.ts`: copy, links, FAQ
+- `lib/motion.ts`: animation variants
 
 ## Phase 2
 
-- `/track` — order lookup with status stepper
+- `/track`: order lookup with status stepper
 - Optional quote form
 - Custom domain + `metadataBase` in `app/layout.tsx`
 

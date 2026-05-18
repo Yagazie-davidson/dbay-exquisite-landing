@@ -23,7 +23,7 @@ export function Trust() {
             </h2>
             <ul className="mt-8 space-y-4 text-muted">
               <li className="flex gap-3">
-                <span className="text-accent font-medium">—</span>
+                <span className="text-accent font-medium" aria-hidden>•</span>
                 <span>
                   <strong className="text-ink">{COMPANY.name}</strong>
                   <br />
@@ -31,12 +31,12 @@ export function Trust() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="text-accent font-medium">—</span>
+                <span className="text-accent font-medium" aria-hidden>•</span>
                 <span>Based in {COMPANY.location}</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-accent font-medium">—</span>
-                <span>Verified on X — thousands of orders fulfilled</span>
+                <span className="text-accent font-medium" aria-hidden>•</span>
+                <span>Verified on X, with thousands of orders fulfilled</span>
               </li>
             </ul>
             <motion.div variants={staggerItem} className="mt-8">
